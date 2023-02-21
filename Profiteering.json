@@ -1,0 +1,15 @@
+{
+    "Author": "LuBiao",
+    "Name": "Profiteering",
+    "InternalName": "Profiteering",
+    "AssemblyVersion": "0.1.0",
+    "Description": "帮您计算成本",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://example.com/",
+    "DalamudApiLevel": 8,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "LoadPriority": 0,
+    "Punchline": "帮您计算成本",
+    "AcceptsFeedback": true
+}
