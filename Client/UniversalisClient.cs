@@ -8,23 +8,41 @@ using Profiteering.Response;
 namespace Profiteering.Client;
 internal static class UniversalisClient
 {
-    internal static async Task<MarketDataResponse> GetCurrentDataAsync(int[] itemId, string worldName, CancellationToken cancellationToken, int historyCount = 0)
+    internal static async Task<MarketDataResponse> GetMaterialsPriceAsync(int[] itemId, string worldName, int historyCount = 0)
     {
         var uriBuilder = new UriBuilder($"https://universalis.app/api/v2/{worldName}/{String.Join(",", itemId)}?listings=+10&entries=0&fields=Citems.listings.worldName%2Citems.listings.pricePerUnit");
-
-        cancellationToken.ThrowIfCancellationRequested();
+        CancellationToken none = CancellationToken.None;
+        none.ThrowIfCancellationRequested();
 
         using var client = new HttpClient();
         var res = await client
-          .GetStreamAsync(uriBuilder.Uri, cancellationToken)
+          .GetStreamAsync(uriBuilder.Uri, none)
           .ConfigureAwait(false);
 
-        cancellationToken.ThrowIfCancellationRequested();
+        none.ThrowIfCancellationRequested();
 
         MarketDataResponse marketDataResponse = await JsonSerializer
-                  .DeserializeAsync<MarketDataResponse>(res, cancellationToken: cancellationToken)
+                  .DeserializeAsync<MarketDataResponse>(res, cancellationToken: none)
                   .ConfigureAwait(false);
 
         return marketDataResponse;
+    }
+
+    internal static async Task<Item> GetRecipePriceAsync(uint itemId, string worldName, bool isHq, int historyCount = 0)
+    {
+        var uriBuilder = new UriBuilder($"https://universalis.app/api/v2/{worldName}/{itemId}?listings=1&entries=0&hq={isHq}&fields=listings.pricePerUnit");
+        CancellationToken none = CancellationToken.None;
+        none.ThrowIfCancellationRequested();
+        using var client = new HttpClient();
+        var res = await client
+          .GetStreamAsync(uriBuilder.Uri, none)
+          .ConfigureAwait(false);
+        none.ThrowIfCancellationRequested();
+
+        Item item = await JsonSerializer
+                  .DeserializeAsync<Item>(res, cancellationToken: none)
+                  .ConfigureAwait(false);
+
+        return item;
     }
 }

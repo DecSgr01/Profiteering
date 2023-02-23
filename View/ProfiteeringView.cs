@@ -1,8 +1,11 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
+using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ImGuiNET;
+using ImGuiScene;
+using Lumina.Data.Files;
 using Lumina.Excel.GeneratedSheets;
 using Profiteering.Client;
 using Profiteering.DTO;
@@ -23,8 +26,7 @@ internal class ProfiteeringView : Window
     RecipeItemDTO recipeItemDTO;
     Recipe recipe;
     int count;
-
-    public ProfiteeringView() : base("AutoCrafterView", ImGuiWindowFlags.NoScrollbar)
+    public ProfiteeringView() : base("ProfiteeringView", ImGuiWindowFlags.NoScrollbar)
     {
         Vector2 minSize = new Vector2(400, 220);
         this.Size = minSize;
@@ -35,12 +37,23 @@ internal class ProfiteeringView : Window
     {
         ImGui.BeginChild("", ImGui.GetContentRegionAvail() with { Y = ImGui.GetContentRegionAvail().Y - ImGuiHelpers.GetButtonSize("关闭").Y - 6 });
 
+        ImGui.Image(recipeItemDTO.ItemIcon.ImGuiHandle, new Vector2(40, 40));
+        ImGui.SameLine();
+        ImGui.Text($"{recipeItemDTO.name}\n售价:{recipeItemDTO.price}");
+
         if (ImGui.Checkbox("基础素材", ref Profiteering.Instance.config.isBasicsMaterials))
         {
             Profiteering.Instance.saveConfig();
             RefreshMaterials(recipe);
-            RefreshMarketData();
+            RefreshMaterialsPrice(recipeItemDTO.materials);
         }
+        ImGui.SameLine();
+        if (ImGui.Checkbox("HQ", ref Profiteering.Instance.config.isHq))
+        {
+            Profiteering.Instance.saveConfig();
+            RefreshRecipePrice(recipeItemDTO.id, Profiteering.Instance.config.isHq);
+        }
+
         if (ImGui.InputInt(":个数", ref count, recipeItemDTO.count))
         {
             if (count <= 0) count = recipeItemDTO.count;
@@ -51,8 +64,15 @@ internal class ProfiteeringView : Window
         {
             num++;
         }
+
+        float unitPrice = 0;
+        float Totalprice = 0;
+        float salesFigures = 0;
+        float profit = 0;
+        float profitMargin = 0;
+
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable | ImGuiTableFlags.Sortable;
-        if (ImGui.BeginTable("table1", 5, flags))
+        if (ImGui.BeginTable("table", 5, flags))
         {
             ImGui.TableSetupColumn("id", ImGuiTableColumnFlags.DefaultHide | ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableSetupColumn("名称", ImGuiTableColumnFlags.WidthFixed);
@@ -74,13 +94,10 @@ internal class ProfiteeringView : Window
 
             var items = this.SortDirectionr switch
             {
-                ImGuiSortDirection.Ascending => recipeItemDTO?.Materials.OrderBy(x => x.id),
-                ImGuiSortDirection.Descending => recipeItemDTO?.Materials.OrderByDescending(x => x.id),
-                _ => recipeItemDTO?.Materials.OrderByDescending(x => x.id)
+                ImGuiSortDirection.Ascending => recipeItemDTO.materials.OrderBy(x => x.id),
+                ImGuiSortDirection.Descending => recipeItemDTO.materials.OrderByDescending(x => x.id),
+                _ => recipeItemDTO.materials.OrderByDescending(x => x.id)
             };
-
-            float? unitPrice = 0;
-            float? Totalprice = 0;
 
             foreach (var item in items)
             {
@@ -92,10 +109,10 @@ internal class ProfiteeringView : Window
                 ImGui.TableSetColumnIndex(2);
                 ImGui.Text($"{item?.count * num}");
                 ImGui.TableSetColumnIndex(3);
-                unitPrice += item?.averageUnitPrice;
+                unitPrice += item.averageUnitPrice;
                 ImGui.Text($"{item?.averageUnitPrice}");
                 ImGui.TableSetColumnIndex(4);
-                Totalprice += item?.averageUnitPrice * item?.count * num;
+                Totalprice += item.averageUnitPrice * item.count * num;
                 ImGui.Text($"{string.Format("{0:f2}", item?.averageUnitPrice * item?.count * num)}");
             }
             ImGui.TableNextRow();
@@ -107,6 +124,14 @@ internal class ProfiteeringView : Window
             ImGui.Text($"{string.Format("{0:f2}", Totalprice)}");
             ImGui.EndTable();
         }
+        ImGui.NewLine();
+        salesFigures = count * recipeItemDTO.price;
+        profit = salesFigures - Totalprice;
+        profitMargin = profit / salesFigures * 100;
+        ImGui.Text($"销售额:{string.Format("{0:f2}", salesFigures)}");
+        ImGui.Text($"利润:{string.Format("{0:f2}", profit)}");
+        ImGui.Text($"利润率:{string.Format("{0:f2}", profitMargin)}%");
+
         ImGui.EndChild();
         ImGui.Separator();
         ImGui.NewLine();
@@ -134,10 +159,16 @@ internal class ProfiteeringView : Window
         {
             Materials = MaterialManager.getDirectMaterials(recipe);
         }
-        recipeItemDTO = new RecipeItemDTO(recipe.ItemResult.Row, recipe.ItemResult.Value?.Name.ToString(), recipe.AmountResult, Materials);
+
+        TexFile texFile = Svc.Data.GetIcon(recipe.ItemResult.Value.Icon);
+        TextureWrap textureWrap = Svc.PluginInterface.UiBuilder.LoadImageRaw(texFile.GetRgbaImageData(), texFile.Header.Width, texFile.Header.Height, 4);
+
+        recipeItemDTO = new RecipeItemDTO(recipe.ItemResult.Row, recipe.ItemResult.Value?.Name.ToString(), recipe.AmountResult, textureWrap, Materials);
+
         count = recipe.AmountResult;
         // PluginLog.Log($"Materials:{string.Join(",", Materials)}");
-        RefreshMarketData();
+        RefreshRecipePrice(recipeItemDTO.id, recipe.CanHq);
+        RefreshMaterialsPrice(recipeItemDTO.materials);
     }
 
 
@@ -154,31 +185,39 @@ internal class ProfiteeringView : Window
             {
                 Materials = MaterialManager.getDirectMaterials(recipe);
             }
-            recipeItemDTO.Materials = Materials;
+            recipeItemDTO.materials = Materials;
             // PluginLog.Log($"Materials:{string.Join(",", Materials)}");
         }
 
     }
 
-    private void RefreshMarketData()
+    private void RefreshRecipePrice(uint id, bool isHq)
     {
         Task.Run(async () =>
         {
-            if (recipeItemDTO != null)
+            string word = Svc.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString();
+            Response.Item item = await UniversalisClient.GetRecipePriceAsync(id, word, isHq);
+            Listing listing = item.listings.First();
+            recipeItemDTO.price = listing.pricePerUnit;
+        });
+    }
+    private void RefreshMaterialsPrice(List<MaterialDTO> materials)
+    {
+        Task.Run(async () =>
+        {
+            if (materials != null)
             {
-                List<MaterialDTO> Materials = recipeItemDTO.Materials;
-                int[] ints = Materials.Select(x => x.id).ToArray();
-                string word = Svc.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value?.Name.ToString();
-                MarketDataResponse marketDataResponse = await UniversalisClient.GetCurrentDataAsync(ints, word, CancellationToken.None);
-                string v = JsonSerializer.Serialize(marketDataResponse);
-                foreach (var Material in Materials)
+                int[] ints = materials.Select(x => x.id).ToArray();
+                string word = Svc.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value.Name.ToString();
+                MarketDataResponse marketDataResponse = await UniversalisClient.GetMaterialsPriceAsync(ints, word);
+                foreach (var material in materials)
                 {
-                    item item = marketDataResponse?.items[Material.id];
+                    Response.Item item = marketDataResponse?.items[material.id];
                     foreach (var Listing in item.listings)
                     {
-                        Material.averageUnitPrice += Listing.pricePerUnit;
+                        material.averageUnitPrice += Listing.pricePerUnit;
                     }
-                    Material.averageUnitPrice /= 10;
+                    material.averageUnitPrice /= 10;
                 }
             }
         });
