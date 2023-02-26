@@ -7,5 +7,5 @@ internal class Listing
     [JsonPropertyName("pricePerUnit")]
     public int pricePerUnit { get; set; }
     [JsonPropertyName("worldName")]
-    public string WorldName { get; set; }
+    public string worldName { get; set; }
 }
