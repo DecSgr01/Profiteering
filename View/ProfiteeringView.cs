@@ -41,8 +41,10 @@ internal class ProfiteeringView : Window
         ImGui.SameLine();
         ImGui.Text($"{recipeItem.name}\n售价:{recipeItem.price}");
 
-        bool isRefreshMaterialsPrice = ImGui.Checkbox("基础素材", ref Profiteering.Instance.config.isBasicsMaterials);
-
+        if (ImGui.Checkbox("基础素材", ref Profiteering.Instance.config.isBasicsMaterials))
+        {
+            Profiteering.Instance.saveConfig();
+        }
         ImGui.SameLine();
         if (ImGui.Checkbox("HQ", ref Profiteering.Instance.config.isHq))
         {
@@ -58,11 +60,7 @@ internal class ProfiteeringView : Window
         int num = recipeItem.count % recipeItem.amountResult > 0 ? (recipeItem.count / recipeItem.amountResult) + 1 : recipeItem.count / recipeItem.amountResult;
 
         tableRows = RefreshTableRow(recipeItem.materials, num);
-        if (isRefreshMaterialsPrice)
-        {
-            Profiteering.Instance.saveConfig();
-            RefreshMaterialsPrice();
-        }
+
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable | ImGuiTableFlags.Sortable;
         if (ImGui.BeginTable("table", 5, flags))
         {
@@ -117,10 +115,10 @@ internal class ProfiteeringView : Window
         ImGui.NewLine();
         float salesFigures = recipeItem.count * recipeItem.price;
         float profit = salesFigures - tableRows.Sum(x => x.total);
-        float profitMargin = profit / salesFigures * 100;
+        float profitMargin = profit / salesFigures;
         ImGui.Text($"销售额:{salesFigures}");
         ImGui.Text($"利润:{profit}");
-        ImGui.Text($"利润率:{string.Format("{0:f2}", profitMargin)}%");
+        ImGui.Text($"利润率:{profitMargin.ToString("P")}%%");
 
         ImGui.EndChild();
         ImGui.Separator();
@@ -130,7 +128,6 @@ internal class ProfiteeringView : Window
         if (ImGui.Button("关闭"))
         {
             IsOpen = false;
-            PluginLog.Log("Settings saved.");
         }
 
         ImGui.End();
@@ -209,11 +206,11 @@ internal class ProfiteeringView : Window
     {
         string word = Svc.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value.Name.ToString();
         int[] ids = getMaterialsId(recipeItem.materials).ToArray();
-        PluginLog.Debug($"RecipeResponse:{String.Join(",", ids)}");
+        PluginLog.Debug($"ids:{String.Join(",", ids)}");
         Task.Run(async () =>
         {
             MarketDataResponse marketDataResponse = await UniversalisClient.GetMaterialsPriceAsync(ids, word);
-            PluginLog.Debug($"RecipeResponse:{JsonSerializer.Serialize(marketDataResponse)}");
+            PluginLog.Debug($"MaterialsResponse:{JsonSerializer.Serialize(marketDataResponse)}");
             setMaterialsPrice(recipeItem.materials, marketDataResponse.items);
         });
     }
