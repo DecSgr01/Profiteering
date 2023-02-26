@@ -28,7 +28,7 @@ internal static class UniversalisClient
         return marketDataResponse;
     }
 
-    internal static async Task<Item> GetRecipePriceAsync(uint itemId, string worldName, bool isHq, int historyCount = 0)
+    internal static async Task<Item> GetRecipePriceAsync(int itemId, string worldName, bool isHq, int historyCount = 0)
     {
         var uriBuilder = new UriBuilder($"https://universalis.app/api/v2/{worldName}/{itemId}?listings=1&entries=0&hq={isHq}&fields=listings.pricePerUnit");
         CancellationToken none = CancellationToken.None;

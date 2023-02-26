@@ -11,11 +11,12 @@ using Profiteering.Client;
 using Profiteering.DTO;
 using Profiteering.Manager;
 using Profiteering.Response;
+using Profiteering.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Profiteering.View;
@@ -23,9 +24,8 @@ namespace Profiteering.View;
 internal class ProfiteeringView : Window
 {
     private ImGuiSortDirection SortDirectionr = 0;
-    RecipeItemDTO recipeItemDTO;
-    Recipe recipe;
-    int count;
+    RecipeItem recipeItem;
+    List<TableRow> tableRows;
     public ProfiteeringView() : base("ProfiteeringView", ImGuiWindowFlags.NoScrollbar)
     {
         Vector2 minSize = new Vector2(400, 220);
@@ -37,40 +37,32 @@ internal class ProfiteeringView : Window
     {
         ImGui.BeginChild("", ImGui.GetContentRegionAvail() with { Y = ImGui.GetContentRegionAvail().Y - ImGuiHelpers.GetButtonSize("关闭").Y - 6 });
 
-        ImGui.Image(recipeItemDTO.ItemIcon.ImGuiHandle, new Vector2(40, 40));
+        ImGui.Image(recipeItem.ItemIcon.ImGuiHandle, new Vector2(40, 40));
         ImGui.SameLine();
-        ImGui.Text($"{recipeItemDTO.name}\n售价:{recipeItemDTO.price}");
+        ImGui.Text($"{recipeItem.name}\n售价:{recipeItem.price}");
 
-        if (ImGui.Checkbox("基础素材", ref Profiteering.Instance.config.isBasicsMaterials))
-        {
-            Profiteering.Instance.saveConfig();
-            RefreshMaterials(recipe);
-            RefreshMaterialsPrice(recipeItemDTO.materials);
-        }
+        bool isRefreshMaterialsPrice = ImGui.Checkbox("基础素材", ref Profiteering.Instance.config.isBasicsMaterials);
+
         ImGui.SameLine();
         if (ImGui.Checkbox("HQ", ref Profiteering.Instance.config.isHq))
         {
             Profiteering.Instance.saveConfig();
-            RefreshRecipePrice(recipeItemDTO.id, Profiteering.Instance.config.isHq);
+            RefreshRecipePrice(Profiteering.Instance.config.isHq);
         }
 
-        if (ImGui.InputInt(":个数", ref count, recipeItemDTO.count))
+        if (ImGui.InputInt(":个数", ref recipeItem.count, recipeItem.amountResult))
         {
-            if (count <= 0) count = recipeItemDTO.count;
+            if (recipeItem.count <= 0) recipeItem.count = recipeItem.amountResult;
         }
 
-        int num = count / recipeItemDTO.count;
-        if (count % recipeItemDTO.count > 0)
+        int num = recipeItem.count % recipeItem.amountResult > 0 ? (recipeItem.count / recipeItem.amountResult) + 1 : recipeItem.count / recipeItem.amountResult;
+
+        tableRows = RefreshTableRow(recipeItem.materials, num);
+        if (isRefreshMaterialsPrice)
         {
-            num++;
+            Profiteering.Instance.saveConfig();
+            RefreshMaterialsPrice();
         }
-
-        float unitPrice = 0;
-        float Totalprice = 0;
-        float salesFigures = 0;
-        float profit = 0;
-        float profitMargin = 0;
-
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable | ImGuiTableFlags.Sortable;
         if (ImGui.BeginTable("table", 5, flags))
         {
@@ -94,42 +86,40 @@ internal class ProfiteeringView : Window
 
             var items = this.SortDirectionr switch
             {
-                ImGuiSortDirection.Ascending => recipeItemDTO.materials.OrderBy(x => x.id),
-                ImGuiSortDirection.Descending => recipeItemDTO.materials.OrderByDescending(x => x.id),
-                _ => recipeItemDTO.materials.OrderByDescending(x => x.id)
+                ImGuiSortDirection.Ascending => tableRows.OrderBy(x => x.id),
+                ImGuiSortDirection.Descending => tableRows.OrderByDescending(x => x.id),
+                _ => tableRows.OrderByDescending(x => x.id)
             };
 
             foreach (var item in items)
             {
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
-                ImGui.Text($"{item?.id}");
+                ImGui.Text($"{item.id}");
                 ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{item?.name}");
+                ImGui.Text($"{item.name}");
                 ImGui.TableSetColumnIndex(2);
-                ImGui.Text($"{item?.count * num}");
+                ImGui.Text($"{item.count}");
                 ImGui.TableSetColumnIndex(3);
-                unitPrice += item.averageUnitPrice;
-                ImGui.Text($"{item?.averageUnitPrice}");
+                ImGui.Text($"{item.unitPrice}");
                 ImGui.TableSetColumnIndex(4);
-                Totalprice += item.averageUnitPrice * item.count * num;
-                ImGui.Text($"{string.Format("{0:f2}", item?.averageUnitPrice * item?.count * num)}");
+                ImGui.Text($"{item.total}");
             }
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(1);
             ImGui.Text("总计");
             ImGui.TableSetColumnIndex(3);
-            ImGui.Text($"{string.Format("{0:f2}", unitPrice)}");
+            ImGui.Text($"{items.Sum(x => x.unitPrice)}");
             ImGui.TableSetColumnIndex(4);
-            ImGui.Text($"{string.Format("{0:f2}", Totalprice)}");
+            ImGui.Text($"{items.Sum(x => x.total)}");
             ImGui.EndTable();
         }
         ImGui.NewLine();
-        salesFigures = count * recipeItemDTO.price;
-        profit = salesFigures - Totalprice;
-        profitMargin = profit / salesFigures * 100;
-        ImGui.Text($"销售额:{string.Format("{0:f2}", salesFigures)}");
-        ImGui.Text($"利润:{string.Format("{0:f2}", profit)}");
+        float salesFigures = recipeItem.count * recipeItem.price;
+        float profit = salesFigures - tableRows.Sum(x => x.total);
+        float profitMargin = profit / salesFigures * 100;
+        ImGui.Text($"销售额:{salesFigures}");
+        ImGui.Text($"利润:{profit}");
         ImGui.Text($"利润率:{string.Format("{0:f2}", profitMargin)}%");
 
         ImGui.EndChild();
@@ -146,80 +136,119 @@ internal class ProfiteeringView : Window
         ImGui.End();
     }
 
-    public void profiteering(Recipe recipe)
+    private List<TableRow> RefreshTableRow(List<RecipeItem> materials, int num)
     {
-        this.recipe = recipe;
-        this.IsOpen = true;
-        List<MaterialDTO> Materials;
-        if (Profiteering.Instance.config.isBasicsMaterials)
+        List<TableRow> tableRow = new List<TableRow>();
+        foreach (var material in materials)
         {
-            Materials = MaterialManager.getBasicsMaterials(recipe);
+            if (Profiteering.Instance.config.isBasicsMaterials && material.amountResult != 0 && material.materials != null)
+            {
+                tableRow.AddRange(getBaseMaterial(material, num));
+            }
+            else
+            {
+                tableRow.Add(new TableRow(material.id, material.name, material.price, material.count * num));
+            }
+        }
+        return tableRow.Distinct(new TableRowComparerUtil()).ToList();
+    }
+
+    public List<TableRow> getBaseMaterial(RecipeItem material, int num)
+    {
+        List<TableRow> tableRow = new List<TableRow>();
+        int materialCount = (material.count * num) % material.amountResult > 0 ? ((material.count * num) / material.amountResult) + 1 : (material.count * num) / material.amountResult;
+
+        if (material.amountResult != 0 && material.materials != null)
+        {
+            tableRow.AddRange(RefreshTableRow(material.materials, materialCount));
         }
         else
         {
-            Materials = MaterialManager.getDirectMaterials(recipe);
+            tableRow.Add(new TableRow(material.id, material.name, material.price, materialCount));
         }
+
+        return tableRow.Distinct(new TableRowComparerUtil()).ToList();
+    }
+
+    public void profiteering(Recipe recipe)
+    {
+
+        List<RecipeItem> recipeItems = MaterialManager.getMaterials(recipe);
 
         TexFile texFile = Svc.Data.GetIcon(recipe.ItemResult.Value.Icon);
         TextureWrap textureWrap = Svc.PluginInterface.UiBuilder.LoadImageRaw(texFile.GetRgbaImageData(), texFile.Header.Width, texFile.Header.Height, 4);
 
-        recipeItemDTO = new RecipeItemDTO(recipe.ItemResult.Row, recipe.ItemResult.Value?.Name.ToString(), recipe.AmountResult, textureWrap, Materials);
+        recipeItem = new RecipeItem(textureWrap, (int)recipe.ItemResult.Row, recipe.ItemResult.Value.Name.ToString(), recipe.AmountResult, recipeItems);
+        tableRows = RefreshTableRow(recipeItem.materials, 1);
 
-        count = recipe.AmountResult;
-        // PluginLog.Log($"Materials:{string.Join(",", Materials)}");
-        RefreshRecipePrice(recipeItemDTO.id, recipe.CanHq);
-        RefreshMaterialsPrice(recipeItemDTO.materials);
+        PluginLog.Debug($"recipeItem:{recipeItem.ToString()}");
+        PluginLog.Debug($"tableRows:{String.Join(",", tableRows)}");
+
+        RefreshRecipePrice(Profiteering.Instance.config.isHq);
+        RefreshMaterialsPrice();
+        this.IsOpen = true;
     }
 
-
-    private void RefreshMaterials(Recipe recipe)
-    {
-        if (recipe != null && recipeItemDTO != null)
-        {
-            List<MaterialDTO> Materials;
-            if (Profiteering.Instance.config.isBasicsMaterials)
-            {
-                Materials = MaterialManager.getBasicsMaterials(recipe);
-            }
-            else
-            {
-                Materials = MaterialManager.getDirectMaterials(recipe);
-            }
-            recipeItemDTO.materials = Materials;
-            // PluginLog.Log($"Materials:{string.Join(",", Materials)}");
-        }
-
-    }
-
-    private void RefreshRecipePrice(uint id, bool isHq)
+    private void RefreshRecipePrice(bool isHq)
     {
         Task.Run(async () =>
         {
             string word = Svc.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString();
-            Response.Item item = await UniversalisClient.GetRecipePriceAsync(id, word, isHq);
-            Listing listing = item.listings.First();
-            recipeItemDTO.price = listing.pricePerUnit;
-        });
-    }
-    private void RefreshMaterialsPrice(List<MaterialDTO> materials)
-    {
-        Task.Run(async () =>
-        {
-            if (materials != null)
+            Response.Item item = await UniversalisClient.GetRecipePriceAsync(recipeItem.id, word, isHq);
+            PluginLog.Debug($"RecipeResponse:{JsonSerializer.Serialize(item)}");
+            Listing listing = item.listings.FirstOrDefault();
+            if (listing != null)
             {
-                int[] ints = materials.Select(x => x.id).ToArray();
-                string word = Svc.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value.Name.ToString();
-                MarketDataResponse marketDataResponse = await UniversalisClient.GetMaterialsPriceAsync(ints, word);
-                foreach (var material in materials)
-                {
-                    Response.Item item = marketDataResponse?.items[material.id];
-                    foreach (var Listing in item.listings)
-                    {
-                        material.averageUnitPrice += Listing.pricePerUnit;
-                    }
-                    material.averageUnitPrice /= 10;
-                }
+                recipeItem.price = listing.pricePerUnit;
             }
         });
+    }
+
+
+    private void RefreshMaterialsPrice()
+    {
+        string word = Svc.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value.Name.ToString();
+        int[] ids = getMaterialsId(recipeItem.materials).ToArray();
+        PluginLog.Debug($"RecipeResponse:{String.Join(",", ids)}");
+        Task.Run(async () =>
+        {
+            MarketDataResponse marketDataResponse = await UniversalisClient.GetMaterialsPriceAsync(ids, word);
+            PluginLog.Debug($"RecipeResponse:{JsonSerializer.Serialize(marketDataResponse)}");
+            setMaterialsPrice(recipeItem.materials, marketDataResponse.items);
+        });
+    }
+    private List<int> getMaterialsId(List<RecipeItem> materials)
+    {
+        List<int> ids = new List<int>();
+        foreach (RecipeItem material in materials)
+        {
+            ids.Add(material.id);
+            if (material.materials != null)
+            {
+                ids.AddRange(getMaterialsId(material.materials));
+            }
+        }
+        return ids.Distinct().ToList();
+    }
+
+
+    private void setMaterialsPrice(List<RecipeItem> materials, Dictionary<int, Response.Item> items)
+    {
+        foreach (RecipeItem material in materials)
+        {
+            if (items.TryGetValue(material.id, out Response.Item item))
+            {
+                foreach (var Listing in item.listings)
+                {
+                    material.price += Listing.pricePerUnit;
+                }
+                material.price /= 10;
+
+                if (material.materials != null)
+                {
+                    setMaterialsPrice(material.materials, items);
+                }
+            }
+        }
     }
 }
