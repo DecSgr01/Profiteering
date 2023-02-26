@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Profiteering.Response;
 
-internal class item
+internal class Item
 {
     [JsonPropertyName("listings")]
     public List<Listing> listings { get; set; }
