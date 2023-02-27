@@ -2,14 +2,14 @@
     "Author": "LuBiao",
     "Name": "Profiteering",
     "InternalName": "Profiteering",
-    "AssemblyVersion": "0.1.0",
-    "Description": "帮您计算成本",
+    "AssemblyVersion": "0.1.1",
+    "Description": "帮您计算利润\n右键物品",
     "ApplicableVersion": "any",
-    "RepoUrl": "https://example.com/",
+    "RepoUrl": "https://github.com/DecSgr01/Profiteering",
     "DalamudApiLevel": 8,
     "LoadRequiredState": 0,
     "LoadSync": false,
     "LoadPriority": 0,
-    "Punchline": "帮您计算成本",
+    "Punchline": "帮您计算利润",
     "AcceptsFeedback": true
 }
