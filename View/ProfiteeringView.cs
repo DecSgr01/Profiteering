@@ -40,7 +40,9 @@ internal class ProfiteeringView : Window
         ImGui.Image(recipeItem.ItemIcon.ImGuiHandle, new Vector2(40, 40));
         ImGui.SameLine();
         ImGui.Text($"{recipeItem.name}\n售价:{recipeItem.price}");
-
+        ImGui.SameLine();
+        double operatingRevenue = recipeItem.count * recipeItem.price;
+        ImGui.Text($"\n    销售额:{operatingRevenue}");
         if (ImGui.Checkbox("基础素材", ref Profiteering.Instance.config.isBasicsMaterials))
         {
             Profiteering.Instance.saveConfig();
@@ -99,7 +101,15 @@ internal class ProfiteeringView : Window
                 ImGui.TableSetColumnIndex(2);
                 ImGui.Text($"{item.count}");
                 ImGui.TableSetColumnIndex(3);
-                ImGui.Text($"{item.unitPrice}");
+                string v = item.unitPrice.ToString();
+                ImGui.PushID(item.id);
+                ImGui.SetNextItemWidth(ImGui.GetColumnWidth());
+                if (ImGui.InputText("##value", ref v, 9))
+                {
+                    if (!int.TryParse(v, out int price)) price = 0;
+                    setMaterialsPrice(recipeItem.materials, item.id, price);
+                }
+                ImGui.PopID();
                 ImGui.TableSetColumnIndex(4);
                 ImGui.Text($"{item.total}");
             }
@@ -113,18 +123,21 @@ internal class ProfiteeringView : Window
             ImGui.EndTable();
         }
         ImGui.NewLine();
-        float salesFigures = recipeItem.count * recipeItem.price;
-        float profit = salesFigures - tableRows.Sum(x => x.total);
-        float profitMargin = profit / salesFigures;
-        ImGui.Text($"销售额:{salesFigures}");
-        ImGui.Text($"利润:{profit}");
-        ImGui.Text($"利润率:{profitMargin.ToString("P")}%%");
-
+        double grossProfit = operatingRevenue - tableRows.Sum(x => x.total);
+        double grossProfitMargin = grossProfit / operatingRevenue;
+        double netProfit = operatingRevenue * 0.95 - tableRows.Sum(x => x.total);
+        double netProfitMargin = netProfit / operatingRevenue;
+        ImGui.Text($"毛利润:{grossProfit}");
+        ImGui.SameLine();
+        ImGui.Text($"毛利率:{grossProfitMargin.ToString("P")}%%");
+        ImGui.Text($"净利润:{Math.Round(netProfit)}");
+        ImGui.SameLine();
+        ImGui.Text($"净利率:{netProfitMargin.ToString("P")}%%");
         ImGui.EndChild();
         ImGui.Separator();
         ImGui.NewLine();
-        ImGui.SameLine(ImGui.GetContentRegionAvail().X - ImGuiHelpers.GetButtonSize("关闭").X - 6);
-
+        ImGui.SameLine(ImGui.GetContentRegionAvail().X - ImGuiHelpers.GetButtonSize("关闭").X - 10);
+        
         if (ImGui.Button("关闭"))
         {
             IsOpen = false;
@@ -176,6 +189,7 @@ internal class ProfiteeringView : Window
         TextureWrap textureWrap = Svc.PluginInterface.UiBuilder.LoadImageRaw(texFile.GetRgbaImageData(), texFile.Header.Width, texFile.Header.Height, 4);
 
         recipeItem = new RecipeItem(textureWrap, (int)recipe.ItemResult.Row, recipe.ItemResult.Value.Name.ToString(), recipe.AmountResult, recipeItems);
+
         tableRows = RefreshTableRow(recipeItem.materials, 1);
 
         PluginLog.Debug($"recipeItem:{recipeItem.ToString()}");
@@ -214,6 +228,7 @@ internal class ProfiteeringView : Window
             setMaterialsPrice(recipeItem.materials, marketDataResponse.items);
         });
     }
+
     private List<int> getMaterialsId(List<RecipeItem> materials)
     {
         List<int> ids = new List<int>();
@@ -245,6 +260,20 @@ internal class ProfiteeringView : Window
                 {
                     setMaterialsPrice(material.materials, items);
                 }
+            }
+        }
+    }
+    private void setMaterialsPrice(List<RecipeItem> materials, int id, int price)
+    {
+        foreach (RecipeItem material in materials)
+        {
+            if (material.id == id)
+            {
+                material.price = price;
+            }
+            if (material.materials != null)
+            {
+                setMaterialsPrice(material.materials, id, price);
             }
         }
     }
