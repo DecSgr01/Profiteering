@@ -64,13 +64,14 @@ internal class ProfiteeringView : Window
         tableRows = RefreshTableRow(recipeItem.materials, num);
 
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable | ImGuiTableFlags.Sortable;
-        if (ImGui.BeginTable("table", 5, flags))
+        if (ImGui.BeginTable("table", 6, flags))
         {
             ImGui.TableSetupColumn("id", ImGuiTableColumnFlags.DefaultHide | ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableSetupColumn("名称", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableSetupColumn("数量", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableSetupColumn("平均单价", ImGuiTableColumnFlags.WidthFixed);
-            ImGui.TableSetupColumn("总价", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("总价", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn("区域", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupScrollFreeze(0, 1);
             ImGui.TableHeadersRow();
 
@@ -112,6 +113,8 @@ internal class ProfiteeringView : Window
                 ImGui.PopID();
                 ImGui.TableSetColumnIndex(4);
                 ImGui.Text($"{item.total}");
+                ImGui.TableSetColumnIndex(5);
+                ImGui.Text($"{item.worldName}");
             }
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(1);
@@ -137,7 +140,7 @@ internal class ProfiteeringView : Window
         ImGui.Separator();
         ImGui.NewLine();
         ImGui.SameLine(ImGui.GetContentRegionAvail().X - ImGuiHelpers.GetButtonSize("关闭").X - 10);
-        
+
         if (ImGui.Button("关闭"))
         {
             IsOpen = false;
@@ -145,7 +148,6 @@ internal class ProfiteeringView : Window
 
         ImGui.End();
     }
-
     private List<TableRow> RefreshTableRow(List<RecipeItem> materials, int num)
     {
         List<TableRow> tableRow = new List<TableRow>();
@@ -157,13 +159,12 @@ internal class ProfiteeringView : Window
             }
             else
             {
-                tableRow.Add(new TableRow(material.id, material.name, material.price, material.count * num));
+                tableRow.Add(new TableRow(material.id, material.name, material.price, material.count * num, material.worldName));
             }
         }
         return tableRow.Distinct(new TableRowComparerUtil()).ToList();
     }
-
-    public List<TableRow> getBaseMaterial(RecipeItem material, int num)
+    private List<TableRow> getBaseMaterial(RecipeItem material, int num)
     {
         List<TableRow> tableRow = new List<TableRow>();
         int materialCount = (material.count * num) % material.amountResult > 0 ? ((material.count * num) / material.amountResult) + 1 : (material.count * num) / material.amountResult;
@@ -174,12 +175,11 @@ internal class ProfiteeringView : Window
         }
         else
         {
-            tableRow.Add(new TableRow(material.id, material.name, material.price, materialCount));
+            tableRow.Add(new TableRow(material.id, material.name, material.price, materialCount, material.worldName));
         }
 
         return tableRow.Distinct(new TableRowComparerUtil()).ToList();
     }
-
     public void profiteering(Recipe recipe)
     {
 
@@ -199,7 +199,6 @@ internal class ProfiteeringView : Window
         RefreshMaterialsPrice();
         this.IsOpen = true;
     }
-
     private void RefreshRecipePrice(bool isHq)
     {
         Task.Run(async () =>
@@ -214,8 +213,6 @@ internal class ProfiteeringView : Window
             }
         });
     }
-
-
     private void RefreshMaterialsPrice()
     {
         string word = Svc.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value.Name.ToString();
@@ -228,7 +225,6 @@ internal class ProfiteeringView : Window
             setMaterialsPrice(recipeItem.materials, marketDataResponse.items);
         });
     }
-
     private List<int> getMaterialsId(List<RecipeItem> materials)
     {
         List<int> ids = new List<int>();
@@ -242,20 +238,23 @@ internal class ProfiteeringView : Window
         }
         return ids.Distinct().ToList();
     }
-
-
     private void setMaterialsPrice(List<RecipeItem> materials, Dictionary<int, Response.Item> items)
     {
         foreach (RecipeItem material in materials)
         {
             if (items.TryGetValue(material.id, out Response.Item item))
             {
+                int price = 0;
                 foreach (var Listing in item.listings)
                 {
-                    material.price += Listing.pricePerUnit;
+                    price += Listing.pricePerUnit;
                 }
-                material.price /= 10;
-
+                price /= 10;
+                if (material.price == 0 || material.price > price)
+                {
+                    material.price = price;
+                    material.worldName = item.listings.FirstOrDefault().worldName;
+                }
                 if (material.materials != null)
                 {
                     setMaterialsPrice(material.materials, items);

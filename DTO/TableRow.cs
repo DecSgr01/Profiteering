@@ -9,19 +9,20 @@ internal class TableRow
     public int unitPrice { get; set; }
     public int count { get; set; }
     public int total { get; set; }
+    public string worldName { get; set; }
 
-
-    public TableRow(int id, string name, int unitPrice, int count)
+    public TableRow(int id, string name, int unitPrice, int count, string worldName)
     {
         this.id = id;
         this.name = name;
         this.unitPrice = unitPrice;
         this.count = count;
         this.total = unitPrice * count;
+        this.worldName = worldName;
     }
 
     public override string ToString()
     {
-        return $"{{\"id\": \"{id}\",\"name\":\" {name}\",\"unitPrice\":\" {unitPrice}\",\"count\":\" {count}\",\"total\":\" {total}\"}}";
+        return $"{{\"id\": \"{id}\",\"name\":\" {name}\",\"unitPrice\":\" {unitPrice}\",\"count\":\" {count}\",\"total\":\" {total}\",\"worldName\":\" {worldName}\"}}";
     }
 }

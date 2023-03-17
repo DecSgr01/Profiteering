@@ -10,6 +10,7 @@ internal class RecipeItem
     public int price { get; set; }
     public int amountResult { get; set; }
     public int count;
+    public string worldName { get; set; }
     public List<RecipeItem> materials { get; set; }
     public RecipeItem(TextureWrap itemIcon, int id, string name, int amountResult, List<RecipeItem> materials)
     {

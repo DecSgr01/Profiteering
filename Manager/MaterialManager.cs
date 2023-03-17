@@ -13,6 +13,12 @@ internal static class MaterialManager
 
         foreach (var material in materials)
         {
+            material.price = (int)Svc.Data.GetExcelSheet<GilShopItem>().Where(x => x.Item.Row == material.id).Select(x => x.Item.Value.PriceMid).FirstOrDefault();
+            if (material.price != 0)
+            {
+                material.worldName = "NPC商店";
+            }
+            
             Recipe materialRecipe = RecipeManager.getRecipebyItemId(material.id);
             if (materialRecipe != null)
             {
@@ -22,5 +28,4 @@ internal static class MaterialManager
         }
         return materials;
     }
-    
 }
