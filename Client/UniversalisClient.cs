@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Dalamud.Logging;
 using Profiteering.Response;
 
 namespace Profiteering.Client;
@@ -10,7 +11,7 @@ internal static class UniversalisClient
 {
     internal static async Task<MarketDataResponse> GetMaterialsPriceAsync(int[] itemId, string worldName, int historyCount = 0)
     {
-        var uriBuilder = new UriBuilder($"https://universalis.app/api/v2/{worldName}/{String.Join(",", itemId)}?listings=+10&entries=0&fields=Citems.listings.worldName%2Citems.listings.pricePerUnit");
+        var uriBuilder = new UriBuilder($"https://universalis.app/api/v2/{worldName}/{String.Join(",", itemId)}?listings=+10&entries=0&fields=items.listings.worldName%2Citems.listings.pricePerUnit");
         CancellationToken none = CancellationToken.None;
         none.ThrowIfCancellationRequested();
 
