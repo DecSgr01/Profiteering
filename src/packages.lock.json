@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net7.0-windows7.0": {
+      "Dalamud.ContextMenu": {
+        "type": "Direct",
+        "requested": "[1.2.2, )",
+        "resolved": "1.2.2",
+        "contentHash": "k+bCV7Xyxx/MCWFIEucSkQxQ9w+Zzz/FwIFOkSAh+13/F8IngivbRuL5NpDz9eAhlqnkifcPIycIKSauxNWHUg=="
+      },
+      "DalamudPackager": {
+        "type": "Direct",
+        "requested": "[2.1.11, )",
+        "resolved": "2.1.11",
+        "contentHash": "9qlAWoRRTiL/geAvuwR/g6Bcbrd/bJJgVnB/RurBiyKs6srsP0bvpoo8IK+Eg8EA6jWeM6/YJWs66w4FIAzqPw=="
+      },
+      "ECommons": {
+        "type": "Direct",
+        "requested": "[2.0.0.4, )",
+        "resolved": "2.0.0.4",
+        "contentHash": "joGkq0Y+K9da2TD/8/felotoTuqaUPjyKFjr2aeod77e28YMEmFrwVH+r91cU9X8hs50LEEp4QTzUnIrMJgcNw=="
+      }
+    }
+  }
+}

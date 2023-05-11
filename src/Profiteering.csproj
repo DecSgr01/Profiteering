@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <AssemblyName>Profiteering</AssemblyName>
-        <TargetFramework>net6.0-windows</TargetFramework>
+        <TargetFramework>net7.0-windows</TargetFramework>
         <PlatformTarget>x64</PlatformTarget>
         <LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -46,9 +46,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dalamud.ContextMenu" Version="1.2.1" />
-        <PackageReference Include="ECommons" Version="1.0.0.3" />
-        <PackageReference Include="DalamudPackager" Version="2.1.10" />
+        <PackageReference Include="Dalamud.ContextMenu" Version="1.2.2" />
+        <PackageReference Include="ECommons" Version="2.0.0.4" />
+        <PackageReference Include="DalamudPackager" Version="2.1.11" />
     </ItemGroup>
 
     <ItemGroup>
