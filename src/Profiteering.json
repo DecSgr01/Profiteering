@@ -1,8 +1,8 @@
 {
-    "Author": "LuBiao",
+    "Author": "post",
     "Name": "Profiteering",
     "InternalName": "Profiteering",
-    "AssemblyVersion": "0.1.1",
+    "AssemblyVersion": "0.1.3",
     "Description": "帮您计算利润\n右键物品",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/DecSgr01/Profiteering",
