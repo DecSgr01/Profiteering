@@ -1,4 +1,5 @@
-{
+[
+  {
     "Author": "post",
     "Name": "Profiteering",
     "InternalName": "Profiteering",
@@ -6,10 +7,16 @@
     "Description": "帮您计算利润\n右键物品",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/DecSgr01/Profiteering",
+    "Tags": null,
     "DalamudApiLevel": 8,
-    "LoadRequiredState": 0,
-    "LoadSync": false,
     "LoadPriority": 0,
-    "Punchline": "帮您计算利润",
-    "AcceptsFeedback": true
-}
+    "Punchline": "帮您计算利润。",
+    "IconUrl": null,
+    "DownloadLinkInstall": "https://github.com/DecSgr01/Profiteering/releases/latest/download/latest.zip",
+    "DownloadLinkTesting": "https://github.com/DecSgr01/Profiteering/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/DecSgr01/Profiteering/releases/latest/download/latest.zip",
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "LastUpdated": "1683817933195"
+  }
+]
