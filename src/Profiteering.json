@@ -18,5 +18,25 @@
     "IsHide": false,
     "IsTestingExclusive": false,
     "LastUpdated": "1683817933195"
-  }
+  },
+  {
+        "Author": "post",
+        "Name": "AutoCrafter",
+        "InternalName": "auto crafter",
+        "AssemblyVersion": "1.0.0",
+        "Description": "自动制作",
+        "ApplicableVersion": "any",
+        "RepoUrl": "https://github.com/DecSgr01/AutoCrafter",
+        "DalamudApiLevel": 8,
+        "LoadPriority": 0,
+        "Punchline": "自动制作",
+        "Tags": null,
+        "IconUrl": null,
+        "DownloadLinkInstall": "https://github.com/DecSgr01/AutoCrafter/releases/latest/download/latest.zip",
+        "DownloadLinkTesting": "https://github.com/DecSgr01/AutoCrafter/releases/latest/download/latest.zip",
+        "DownloadLinkUpdate": "https://github.com/DecSgr01/AutoCrafter/releases/latest/download/latest.zip",
+        "IsHide": false,
+        "IsTestingExclusive": false,
+        "LastUpdated": "1683817933195"
+    }
 ]
