@@ -10,6 +10,9 @@
 
 右键您想获取利润的物品
 
+## 安装
+url:`https://raw.githubusercontent.com/DecSgr01/Profiteering/master/ProfiteeringRepo`
+
 ## 感谢  
 
 * [Universalis](https://github.com/Universalis-FFXIV/Universalis)  
