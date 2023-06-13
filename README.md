@@ -11,7 +11,7 @@
 右键您想获取利润的物品
 
 ## 安装
-url:`https://raw.githubusercontent.com/DecSgr01/Profiteering/master/ProfiteeringRepo`
+url:`https://raw.githubusercontent.com/DecSgr01/Profiteering/master/ProfiteeringRepo.json`
 
 ## 感谢  
 
