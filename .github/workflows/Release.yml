@@ -10,6 +10,12 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
     steps:
+      - name: Setup Dalamud
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile ./latest.zip
+          Expand-Archive -Path ./latest.zip ./dalamud
+          
       - name: Checkout and initialise
         uses: actions/checkout@v2
         with:
