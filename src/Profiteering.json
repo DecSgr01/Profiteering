@@ -1,7 +1,7 @@
 {
     "Author": "DecSgr01",
     "Name": "Profiteering",
-    "AssemblyVersion": "1.0.3.0",
+    "AssemblyVersion": "1.0.4.0",
     "Description": "帮您计算利润\n右键物品",
     "RepoUrl": "https://github.com/DecSgr01/Profiteering",
     "Tags": ["gil","gold","coin"],

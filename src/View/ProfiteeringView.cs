@@ -98,7 +98,13 @@ internal class ProfiteeringView : Window
                 ImGui.TableSetColumnIndex(0);
                 ImGui.Text($"{item.id}");
                 ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{item.name}");
+                ImGui.PushID(item.id);
+                bool selected = false;
+                if (ImGui.Selectable($"{item.name}", ref selected))
+                {
+                    ImGui.SetClipboardText(item.name);
+                }
+                ImGui.PopID();
                 ImGui.TableSetColumnIndex(2);
                 ImGui.Text($"{item.count}");
                 ImGui.TableSetColumnIndex(3);
