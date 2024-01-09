@@ -5,7 +5,7 @@ namespace Profiteering.Response;
 internal class Listing
 {
     [JsonPropertyName("pricePerUnit")]
-    public int pricePerUnit { get; set; }
+    internal int PricePerUnit { get; set; }
     [JsonPropertyName("worldName")]
-    public string worldName { get; set; }
+    internal required string WorldName { get; set; }
 }

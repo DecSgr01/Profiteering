@@ -6,5 +6,5 @@ namespace Profiteering.Response;
 internal class Item
 {
     [JsonPropertyName("listings")]
-    public List<Listing> listings { get; set; }
+    internal required List<Listing> Listings { get; set; }
 }

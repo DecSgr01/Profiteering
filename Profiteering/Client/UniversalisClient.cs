@@ -21,11 +21,19 @@ internal static class UniversalisClient
 
     none.ThrowIfCancellationRequested();
 
+<<<<<<< HEAD
     MarketDataResponse marketDataResponse = await JsonSerializer
               .DeserializeAsync<MarketDataResponse>(res, cancellationToken: none)
               .ConfigureAwait(false);
 
     return marketDataResponse;
+=======
+    MarketDataResponse? marketDataResponse = await JsonSerializer
+              .DeserializeAsync<MarketDataResponse>(res, cancellationToken: none)
+              .ConfigureAwait(false);
+
+    return marketDataResponse!;
+>>>>>>> 17e02ca (api8)
   }
 
   internal static async Task<Item> GetRecipePriceAsync(int itemId, string worldName, bool isHq)
@@ -39,10 +47,18 @@ internal static class UniversalisClient
       .ConfigureAwait(false);
     none.ThrowIfCancellationRequested();
 
+<<<<<<< HEAD
     Item item = await JsonSerializer
               .DeserializeAsync<Item>(res, cancellationToken: none)
               .ConfigureAwait(false);
 
     return item;
+=======
+    Item? item = await JsonSerializer
+              .DeserializeAsync<Item>(res, cancellationToken: none)
+              .ConfigureAwait(false);
+
+    return item!;
+>>>>>>> 17e02ca (api8)
   }
 }

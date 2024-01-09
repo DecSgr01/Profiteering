@@ -6,5 +6,5 @@ namespace Profiteering.Response;
 internal class MarketDataResponse
 {
     [JsonPropertyName("items")]
-    public Dictionary<int, Item> items { get; set; } = new Dictionary<int, Item>();
+    internal Dictionary<int, Item> Items { get; set; } = new();
 }

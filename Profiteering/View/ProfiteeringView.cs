@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 using Dalamud.Interface.Internal;
+=======
+>>>>>>> 17e02ca (api8)
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+<<<<<<< HEAD
 using Profiteering.Client;
 using Profiteering.DTO;
 using Profiteering.Manager;
@@ -14,12 +18,19 @@ using System.Linq;
 using System.Numerics;
 using System.Text.Json;
 using System.Threading.Tasks;
+=======
+using Profiteering.ViewModel;
+using System;
+using System.Linq;
+using System.Numerics;
+>>>>>>> 17e02ca (api8)
 
 namespace Profiteering.View;
 
 internal class ProfiteeringView : Window
 {
     private ImGuiSortDirection SortDirectionr = 0;
+<<<<<<< HEAD
     private RecipeItem recipeItem;
     private List<TableRow> tableRows;
     public ProfiteeringView() : base("ProfiteeringView", ImGuiWindowFlags.NoScrollbar)
@@ -27,12 +38,21 @@ internal class ProfiteeringView : Window
         Vector2 minSize = new Vector2(400, 220);
         this.Size = minSize;
         this.SizeCondition = ImGuiCond.FirstUseEver;
+=======
+    private readonly ProfiteeringViewModel PVM;
+    internal ProfiteeringView(string name, ProfiteeringViewModel profiteeringViewModel) : base(name, ImGuiWindowFlags.NoScrollbar)
+    {
+        PVM = profiteeringViewModel;
+        Size = new(400, 220);
+        SizeCondition = ImGuiCond.FirstUseEver;
+>>>>>>> 17e02ca (api8)
     }
 
     public override void Draw()
     {
         ImGui.BeginChild("", ImGui.GetContentRegionAvail() with { Y = ImGui.GetContentRegionAvail().Y - ImGuiHelpers.GetButtonSize("关闭").Y - 6 });
 
+<<<<<<< HEAD
         ImGui.Image(recipeItem.ItemIcon, new Vector2(40, 40));
         ImGui.SameLine();
         ImGui.Text($"{recipeItem.Name}\n售价:{recipeItem.Price}");
@@ -58,6 +78,33 @@ internal class ProfiteeringView : Window
         int num = recipeItem.Count % recipeItem.AmountResult > 0 ? (recipeItem.Count / recipeItem.AmountResult) + 1 : recipeItem.Count / recipeItem.AmountResult;
 
         tableRows = RefreshTableRow(recipeItem.Materials, num);
+=======
+        ImGui.Image(PVM.RecipeItem.ItemIcon, new Vector2(40, 40));
+        ImGui.SameLine();
+        ImGui.Text($"{PVM.RecipeItem.Name}\n售价:{PVM.RecipeItem.Price}");
+        ImGui.SameLine();
+        double operatingRevenue = PVM.RecipeItem.Count * PVM.RecipeItem.Price;
+        ImGui.Text($"\n    销售额:{operatingRevenue}");
+        if (ImGui.Checkbox("基础素材", ref global::Profiteering.Profiteering.Config.isBasicsMaterials))
+        {
+            global::Profiteering.Profiteering.Config.Save();
+        }
+        ImGui.SameLine();
+        if (ImGui.Checkbox("HQ", ref global::Profiteering.Profiteering.Config.isHq))
+        {
+            global::Profiteering.Profiteering.Config.Save();
+            PVM.RefreshRecipePrice(global::Profiteering.Profiteering.Config.isHq);
+        }
+
+        if (ImGui.InputInt(":个数", ref PVM.RecipeItem.Count, PVM.RecipeItem.AmountResult))
+        {
+            if (PVM.RecipeItem.Count <= 0) PVM.RecipeItem.Count = PVM.RecipeItem.AmountResult;
+        }
+
+        int num = PVM.RecipeItem.Count % PVM.RecipeItem.AmountResult > 0 ? (PVM.RecipeItem.Count / PVM.RecipeItem.AmountResult) + 1 : PVM.RecipeItem.Count / PVM.RecipeItem.AmountResult;
+
+        PVM.TableRows = PVM.RefreshTableRow(PVM.RecipeItem.Materials, num);
+>>>>>>> 17e02ca (api8)
 
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable | ImGuiTableFlags.Sortable;
         if (ImGui.BeginTable("table", 6, flags))
@@ -83,9 +130,15 @@ internal class ProfiteeringView : Window
 
             var items = SortDirectionr switch
             {
+<<<<<<< HEAD
                 ImGuiSortDirection.Ascending => tableRows.OrderBy(x => x.Id),
                 ImGuiSortDirection.Descending => tableRows.OrderByDescending(x => x.Id),
                 _ => tableRows.OrderByDescending(x => x.Id)
+=======
+                ImGuiSortDirection.Ascending => PVM.TableRows.OrderBy(x => x.Id),
+                ImGuiSortDirection.Descending => PVM.TableRows.OrderByDescending(x => x.Id),
+                _ => PVM.TableRows.OrderByDescending(x => x.Id)
+>>>>>>> 17e02ca (api8)
             };
 
             foreach (var item in items)
@@ -110,7 +163,11 @@ internal class ProfiteeringView : Window
                 if (ImGui.InputText("##value", ref v, 9))
                 {
                     if (!int.TryParse(v, out int price)) price = 0;
+<<<<<<< HEAD
                     setMaterialsPrice(recipeItem.Materials, item.Id, price);
+=======
+                    PVM.SetMaterialsPrice(PVM.RecipeItem.Materials, item.Id, price);
+>>>>>>> 17e02ca (api8)
                 }
                 ImGui.PopID();
                 ImGui.TableSetColumnIndex(4);
@@ -128,9 +185,15 @@ internal class ProfiteeringView : Window
             ImGui.EndTable();
         }
         ImGui.NewLine();
+<<<<<<< HEAD
         double grossProfit = operatingRevenue - tableRows.Sum(x => x.Total);
         double grossProfitMargin = grossProfit / operatingRevenue;
         double netProfit = operatingRevenue * 0.95 - tableRows.Sum(x => x.Total);
+=======
+        double grossProfit = operatingRevenue - PVM.TableRows.Sum(x => x.Total);
+        double grossProfitMargin = grossProfit / operatingRevenue;
+        double netProfit = operatingRevenue * 0.95 - PVM.TableRows.Sum(x => x.Total);
+>>>>>>> 17e02ca (api8)
         double netProfitMargin = netProfit / operatingRevenue;
         ImGui.Text($"毛利润:{grossProfit}");
         ImGui.SameLine();
@@ -150,6 +213,7 @@ internal class ProfiteeringView : Window
 
         ImGui.End();
     }
+<<<<<<< HEAD
     private List<TableRow> RefreshTableRow(List<RecipeItem> materials, int num)
     {
         List<TableRow> tableRow = new List<TableRow>();
@@ -279,4 +343,12 @@ internal class ProfiteeringView : Window
             }
         }
     }
+=======
+
+    internal void Profiteering(Recipe recipe)
+    {
+        PVM.Profiteering(recipe);
+        IsOpen = true;
+    }
+>>>>>>> 17e02ca (api8)
 }
