@@ -14,7 +14,6 @@ public class Configuration : IPluginConfiguration
     {
         Dalamud.PluginInterface.SavePluginConfig(this);
     }
-
     public static Configuration Load()
     {
         if (Dalamud.PluginInterface.GetPluginConfig() is Configuration config)

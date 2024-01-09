@@ -1,5 +1,4 @@
 ﻿using ECommons;
-using ECommons.DalamudServices;
 using Profiteering.Manager;
 using Dalamud.ContextMenu;
 using Profiteering.View;
@@ -12,13 +11,15 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 namespace Profiteering;
 public sealed class Profiteering : IDalamudPlugin
 {
-    public string Name => "Profiteering";
+    public string InternalName { get; } = "Profiteering";
+    public string Name { get; } = "Profiteering";
     public static Configuration Config { get; private set; } = null!;
     private readonly DalamudContextMenu contextMenuBase;
     private readonly ProfiteeringView profiteeringView;
     private readonly WindowSystem windowSystem;
     public Profiteering(DalamudPluginInterface Interface)
     {
+        InternalName = "Profiteering";
         Dalamud.Initialize(Interface);
         ECommonsMain.Init(Interface, this);
 

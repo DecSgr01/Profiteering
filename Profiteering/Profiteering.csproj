@@ -20,12 +20,12 @@
 
     <!-- Auto-Download Dalamud if not already present -->
     <Target Name="DownloadDalamudDependencies" BeforeTargets="CollectPackageReferences">
-        <DownloadFile Condition="!Exists('$(DalamudLocal)')" DestinationFolder="$(DalamudLocal)" SourceUrl="https://github.com/goatcorp/dalamud-distrib/raw/main/stg/latest.zip" />
+        <DownloadFile Condition="!Exists('$(DalamudLocal)/latest.zip')" DestinationFolder="$(DalamudLocal)" SourceUrl="https://github.com/goatcorp/dalamud-distrib/raw/main/stg/latest.zip" />
     </Target>
 
     <!-- Auto-Extract auto-downloaded Dalamud if not already present -->
     <Target Name="UnzipDalamud" AfterTargets="DownloadDalamudDependencies">
-        <Unzip Condition="!Exists('$(DalamudLocal)')" DestinationFolder="$(DalamudLocal)" SourceFiles="$(DalamudLocal)/latest.zip" />
+        <Unzip Condition="!Exists('$(DalamudLocal)/Dalamud.dll')" DestinationFolder="$(DalamudLocal)" SourceFiles="$(DalamudLocal)/latest.zip" />
     </Target>
 
     <ItemGroup>
