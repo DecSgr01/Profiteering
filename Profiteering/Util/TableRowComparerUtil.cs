@@ -6,16 +6,16 @@ internal class TableRowComparerUtil : IEqualityComparer<TableRow>
 {
     public bool Equals(TableRow x, TableRow y)
     {
-        if (x.id == y.id)
+        if (x.Id == y.Id)
         {
-            x.count += y.count;
+            x.Count += y.Count;
         }
-        return x.id == y.id;
+        return x.Id == y.Id;
     }
 
     public int GetHashCode(TableRow obj)
     {
         //返回字段的HashCode，只有HashCode相同才会去比较
-        return obj.id.GetHashCode();
+        return obj.Id.GetHashCode();
     }
 }

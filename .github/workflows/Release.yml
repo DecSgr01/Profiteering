@@ -23,18 +23,18 @@ jobs:
         with:
           submodules: recursive
       - name: Restore project dependencies
-        run: dotnet restore .\src\ --verbosity normal
+        run: dotnet restore .\Profiteering\ --verbosity normal
 
       - name: publish
-        run: dotnet publish .\src\ -o .\src\bin\Release\
+        run: dotnet publish .\Profiteering\ -o .\Profiteering\bin\Release\
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: Profiteering-release-${{ github.sha }}
           path: |
-            src/bin/Release
-            !src/bin/Release/Profiteering
+            Profiteering/bin/Release
+            !Profiteering/bin/Release/Profiteering
 
       - name: Create Release
         id: create_release
@@ -53,6 +53,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./src/bin/Release/Profiteering/latest.zip
+          asset_path: ./Profiteering/bin/Release/Profiteering/latest.zip
           asset_name: latest.zip
           asset_content_type: application/zip

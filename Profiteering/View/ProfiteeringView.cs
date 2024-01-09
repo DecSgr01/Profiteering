@@ -1,11 +1,7 @@
-using Dalamud.Interface;
+using Dalamud.Interface.Internal;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
-using Dalamud.Utility;
-using ECommons.DalamudServices;
 using ImGuiNET;
-using ImGuiScene;
-using Lumina.Data.Files;
 using Lumina.Excel.GeneratedSheets;
 using Profiteering.Client;
 using Profiteering.DTO;
@@ -24,8 +20,8 @@ namespace Profiteering.View;
 internal class ProfiteeringView : Window
 {
     private ImGuiSortDirection SortDirectionr = 0;
-    RecipeItem recipeItem;
-    List<TableRow> tableRows;
+    private RecipeItem recipeItem;
+    private List<TableRow> tableRows;
     public ProfiteeringView() : base("ProfiteeringView", ImGuiWindowFlags.NoScrollbar)
     {
         Vector2 minSize = new Vector2(400, 220);
@@ -37,31 +33,31 @@ internal class ProfiteeringView : Window
     {
         ImGui.BeginChild("", ImGui.GetContentRegionAvail() with { Y = ImGui.GetContentRegionAvail().Y - ImGuiHelpers.GetButtonSize("关闭").Y - 6 });
 
-        ImGui.Image(recipeItem.ItemIcon.ImGuiHandle, new Vector2(40, 40));
+        ImGui.Image(recipeItem.ItemIcon, new Vector2(40, 40));
         ImGui.SameLine();
-        ImGui.Text($"{recipeItem.name}\n售价:{recipeItem.price}");
+        ImGui.Text($"{recipeItem.Name}\n售价:{recipeItem.Price}");
         ImGui.SameLine();
-        double operatingRevenue = recipeItem.count * recipeItem.price;
+        double operatingRevenue = recipeItem.Count * recipeItem.Price;
         ImGui.Text($"\n    销售额:{operatingRevenue}");
-        if (ImGui.Checkbox("基础素材", ref Profiteering.Instance.config.isBasicsMaterials))
+        if (ImGui.Checkbox("基础素材", ref Profiteering.Config.isBasicsMaterials))
         {
-            Profiteering.Instance.saveConfig();
+            Profiteering.Config.Save();
         }
         ImGui.SameLine();
-        if (ImGui.Checkbox("HQ", ref Profiteering.Instance.config.isHq))
+        if (ImGui.Checkbox("HQ", ref Profiteering.Config.isHq))
         {
-            Profiteering.Instance.saveConfig();
-            RefreshRecipePrice(Profiteering.Instance.config.isHq);
+            Profiteering.Config.Save();
+            RefreshRecipePrice(Profiteering.Config.isHq);
         }
 
-        if (ImGui.InputInt(":个数", ref recipeItem.count, recipeItem.amountResult))
+        if (ImGui.InputInt(":个数", ref recipeItem.Count, recipeItem.AmountResult))
         {
-            if (recipeItem.count <= 0) recipeItem.count = recipeItem.amountResult;
+            if (recipeItem.Count <= 0) recipeItem.Count = recipeItem.AmountResult;
         }
 
-        int num = recipeItem.count % recipeItem.amountResult > 0 ? (recipeItem.count / recipeItem.amountResult) + 1 : recipeItem.count / recipeItem.amountResult;
+        int num = recipeItem.Count % recipeItem.AmountResult > 0 ? (recipeItem.Count / recipeItem.AmountResult) + 1 : recipeItem.Count / recipeItem.AmountResult;
 
-        tableRows = RefreshTableRow(recipeItem.materials, num);
+        tableRows = RefreshTableRow(recipeItem.Materials, num);
 
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.Reorderable | ImGuiTableFlags.Hideable | ImGuiTableFlags.Sortable;
         if (ImGui.BeginTable("table", 6, flags))
@@ -80,61 +76,61 @@ internal class ProfiteeringView : Window
                 var sorts_specs = ImGui.TableGetSortSpecs();
                 if (sorts_specs.NativePtr != null && sorts_specs.SpecsDirty)
                 {
-                    this.SortDirectionr = sorts_specs.Specs.SortDirection;
+                    SortDirectionr = sorts_specs.Specs.SortDirection;
                     sorts_specs.SpecsDirty = false;
                 }
             }
 
-            var items = this.SortDirectionr switch
+            var items = SortDirectionr switch
             {
-                ImGuiSortDirection.Ascending => tableRows.OrderBy(x => x.id),
-                ImGuiSortDirection.Descending => tableRows.OrderByDescending(x => x.id),
-                _ => tableRows.OrderByDescending(x => x.id)
+                ImGuiSortDirection.Ascending => tableRows.OrderBy(x => x.Id),
+                ImGuiSortDirection.Descending => tableRows.OrderByDescending(x => x.Id),
+                _ => tableRows.OrderByDescending(x => x.Id)
             };
 
             foreach (var item in items)
             {
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
-                ImGui.Text($"{item.id}");
+                ImGui.Text($"{item.Id}");
                 ImGui.TableSetColumnIndex(1);
-                ImGui.PushID(item.id);
+                ImGui.PushID(item.Id);
                 bool selected = false;
-                if (ImGui.Selectable($"{item.name}", ref selected))
+                if (ImGui.Selectable($"{item.Name}", ref selected))
                 {
-                    ImGui.SetClipboardText(item.name);
+                    ImGui.SetClipboardText(item.Name);
                 }
                 ImGui.PopID();
                 ImGui.TableSetColumnIndex(2);
-                ImGui.Text($"{item.count}");
+                ImGui.Text($"{item.Count}");
                 ImGui.TableSetColumnIndex(3);
-                string v = item.unitPrice.ToString();
-                ImGui.PushID(item.id);
+                string v = item.UnitPrice.ToString();
+                ImGui.PushID(item.Id);
                 ImGui.SetNextItemWidth(ImGui.GetColumnWidth());
                 if (ImGui.InputText("##value", ref v, 9))
                 {
                     if (!int.TryParse(v, out int price)) price = 0;
-                    setMaterialsPrice(recipeItem.materials, item.id, price);
+                    setMaterialsPrice(recipeItem.Materials, item.Id, price);
                 }
                 ImGui.PopID();
                 ImGui.TableSetColumnIndex(4);
-                ImGui.Text($"{item.total}");
+                ImGui.Text($"{item.Total}");
                 ImGui.TableSetColumnIndex(5);
-                ImGui.Text($"{item.worldName}");
+                ImGui.Text($"{item.WorldName}");
             }
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(1);
             ImGui.Text("总计");
             ImGui.TableSetColumnIndex(3);
-            ImGui.Text($"{items.Sum(x => x.unitPrice)}");
+            ImGui.Text($"{items.Sum(x => x.UnitPrice)}");
             ImGui.TableSetColumnIndex(4);
-            ImGui.Text($"{items.Sum(x => x.total)}");
+            ImGui.Text($"{items.Sum(x => x.Total)}");
             ImGui.EndTable();
         }
         ImGui.NewLine();
-        double grossProfit = operatingRevenue - tableRows.Sum(x => x.total);
+        double grossProfit = operatingRevenue - tableRows.Sum(x => x.Total);
         double grossProfitMargin = grossProfit / operatingRevenue;
-        double netProfit = operatingRevenue * 0.95 - tableRows.Sum(x => x.total);
+        double netProfit = operatingRevenue * 0.95 - tableRows.Sum(x => x.Total);
         double netProfitMargin = netProfit / operatingRevenue;
         ImGui.Text($"毛利润:{grossProfit}");
         ImGui.SameLine();
@@ -159,76 +155,77 @@ internal class ProfiteeringView : Window
         List<TableRow> tableRow = new List<TableRow>();
         foreach (var material in materials)
         {
-            if (Profiteering.Instance.config.isBasicsMaterials && material.amountResult != 0 && material.materials != null)
+            if (Profiteering.Config.isBasicsMaterials && material.AmountResult != 0 && material.Materials != null)
             {
                 tableRow.AddRange(getBaseMaterial(material, num));
             }
             else
             {
-                tableRow.Add(new TableRow(material.id, material.name, material.price, material.count * num, material.worldName));
+                tableRow.Add(new TableRow(material.Id, material.Name, material.Price, material.Count * num, material.WorldName));
             }
         }
         return tableRow.Distinct(new TableRowComparerUtil()).ToList();
     }
     private List<TableRow> getBaseMaterial(RecipeItem material, int num)
     {
-        List<TableRow> tableRow = new List<TableRow>();
-        int materialCount = (material.count * num) % material.amountResult > 0 ? ((material.count * num) / material.amountResult) + 1 : (material.count * num) / material.amountResult;
+        List<TableRow> tableRow = new();
+        int materialCount = material.Count * num % material.AmountResult > 0 ? (material.Count * num / material.AmountResult) + 1 : material.Count * num / material.AmountResult;
 
-        if (material.amountResult != 0 && material.materials != null)
+        if (material.AmountResult != 0 && material.Materials != null)
         {
-            tableRow.AddRange(RefreshTableRow(material.materials, materialCount));
+            tableRow.AddRange(RefreshTableRow(material.Materials, materialCount));
         }
         else
         {
-            tableRow.Add(new TableRow(material.id, material.name, material.price, materialCount, material.worldName));
+            tableRow.Add(new TableRow(material.Id, material.Name, material.Price, materialCount, material.WorldName));
         }
 
         return tableRow.Distinct(new TableRowComparerUtil()).ToList();
     }
+
     public void profiteering(Recipe recipe)
     {
 
         List<RecipeItem> recipeItems = MaterialManager.getMaterials(recipe);
 
-        TexFile texFile = Svc.Data.GetIcon(recipe.ItemResult.Value.Icon);
-        TextureWrap textureWrap = Svc.PluginInterface.UiBuilder.LoadImageRaw(texFile.GetRgbaImageData(), texFile.Header.Width, texFile.Header.Height, 4);
+        IDalamudTextureWrap dalamudTextureWrap = Dalamud.TextureProvider.GetIcon(recipe.ItemResult.Value.Icon);
 
-        recipeItem = new RecipeItem(textureWrap, (int)recipe.ItemResult.Row, recipe.ItemResult.Value.Name.ToString(), recipe.AmountResult, recipeItems);
+        recipeItem = new RecipeItem(dalamudTextureWrap.ImGuiHandle, (int)recipe.ItemResult.Row, recipe.ItemResult.Value.Name.ToString(), recipe.AmountResult, recipeItems);
 
-        tableRows = RefreshTableRow(recipeItem.materials, 1);
+        tableRows = RefreshTableRow(recipeItem.Materials, 1);
 
-        PluginLog.Debug($"recipeItem:{recipeItem.ToString()}");
-        PluginLog.Debug($"tableRows:{String.Join(",", tableRows)}");
+        Dalamud.PluginLog.Debug($"recipeItem:{recipeItem}");
+        Dalamud.PluginLog.Debug($"tableRows:{string.Join(",", tableRows)}");
 
-        RefreshRecipePrice(Profiteering.Instance.config.isHq);
+        RefreshRecipePrice(Profiteering.Config.isHq);
         RefreshMaterialsPrice();
-        this.IsOpen = true;
+        IsOpen = true;
     }
     private void RefreshRecipePrice(bool isHq)
     {
         Task.Run(async () =>
         {
-            string word = Svc.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString();
-            Response.Item item = await UniversalisClient.GetRecipePriceAsync(recipeItem.id, word, isHq);
-            PluginLog.Debug($"RecipeResponse:{JsonSerializer.Serialize(item)}");
+            string word = Dalamud.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString();
+            Response.Item item = await UniversalisClient.GetRecipePriceAsync(recipeItem.Id, word, isHq);
+            Dalamud.PluginLog.Debug($"RecipeResponse:{JsonSerializer.Serialize(item)}");
             Listing listing = item.listings.FirstOrDefault();
             if (listing != null)
             {
-                recipeItem.price = listing.pricePerUnit;
+                recipeItem.Price = listing.pricePerUnit;
             }
         });
     }
+
     private void RefreshMaterialsPrice()
     {
-        string word = Svc.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value.Name.ToString();
-        int[] ids = getMaterialsId(recipeItem.materials).ToArray();
-        PluginLog.Debug($"ids:{String.Join(",", ids)}");
+        string word = Dalamud.ClientState.LocalPlayer?.CurrentWorld.GameData?.DataCenter.Value.Name.ToString();
+        int[] ids = getMaterialsId(recipeItem.Materials).ToArray();
+        Dalamud.PluginLog.Debug($"ids:{String.Join(",", ids)}");
         Task.Run(async () =>
         {
             MarketDataResponse marketDataResponse = await UniversalisClient.GetMaterialsPriceAsync(ids, word);
-            PluginLog.Debug($"MaterialsResponse:{JsonSerializer.Serialize(marketDataResponse)}");
-            setMaterialsPrice(recipeItem.materials, marketDataResponse.items);
+            Dalamud.PluginLog.Debug($"MaterialsResponse:{JsonSerializer.Serialize(marketDataResponse)}");
+            setMaterialsPrice(recipeItem.Materials, marketDataResponse.items);
         });
     }
     private List<int> getMaterialsId(List<RecipeItem> materials)
@@ -236,10 +233,10 @@ internal class ProfiteeringView : Window
         List<int> ids = new List<int>();
         foreach (RecipeItem material in materials)
         {
-            ids.Add(material.id);
-            if (material.materials != null)
+            ids.Add(material.Id);
+            if (material.Materials != null)
             {
-                ids.AddRange(getMaterialsId(material.materials));
+                ids.AddRange(getMaterialsId(material.Materials));
             }
         }
         return ids.Distinct().ToList();
@@ -248,7 +245,7 @@ internal class ProfiteeringView : Window
     {
         foreach (RecipeItem material in materials)
         {
-            if (items.TryGetValue(material.id, out Response.Item item))
+            if (items.TryGetValue(material.Id, out Response.Item item))
             {
                 int price = 0;
                 foreach (var Listing in item.listings)
@@ -256,14 +253,14 @@ internal class ProfiteeringView : Window
                     price += Listing.pricePerUnit;
                 }
                 price /= 10;
-                if (material.price == 0 || material.price > price)
+                if (material.Price == 0 || material.Price > price)
                 {
-                    material.price = price;
-                    material.worldName = item.listings.FirstOrDefault().worldName;
+                    material.Price = price;
+                    material.WorldName = item.listings.FirstOrDefault().worldName;
                 }
-                if (material.materials != null)
+                if (material.Materials != null)
                 {
-                    setMaterialsPrice(material.materials, items);
+                    setMaterialsPrice(material.Materials, items);
                 }
             }
         }
@@ -272,13 +269,13 @@ internal class ProfiteeringView : Window
     {
         foreach (RecipeItem material in materials)
         {
-            if (material.id == id)
+            if (material.Id == id)
             {
-                material.price = price;
+                material.Price = price;
             }
-            if (material.materials != null)
+            if (material.Materials != null)
             {
-                setMaterialsPrice(material.materials, id, price);
+                setMaterialsPrice(material.Materials, id, price);
             }
         }
     }
