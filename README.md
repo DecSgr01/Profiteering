@@ -4,14 +4,11 @@
 
 ## 示例  
 
-![image](https://user-images.githubusercontent.com/46422979/221414169-db2778ce-1266-41bf-91ab-89176c13e320.png)
+![image](image\221414169-db2778ce-1266-41bf-91ab-89176c13e320.png)
 
 ## 使用
 
-右键您想获取利润的物品
-
-## 安装
-url:`https://raw.githubusercontent.com/DecSgr01/Profiteering/master/ProfiteeringRepo.json`
+右键您想获取利润的物品  
 
 ## 感谢  
 
