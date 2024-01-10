@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <Platforms>x64</Platforms>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DalamudPackager" Version="2.1.11" />
+        <Reference Include="FFXIVClientStructs" Private="false" />
+        <Reference Include="Newtonsoft.Json" Private="false" />
+        <Reference Include="Dalamud" Private="false" />
+        <Reference Include="Dalamud.Interface" Private="false" />
+        <Reference Include="ImGui.NET" Private="false" />
+        <Reference Include="ImGuiScene" Private="false" />
+        <Reference Include="Lumina" Private="false" />
+        <Reference Include="Lumina.Excel" Private="false" />
+    </ItemGroup>
+
+    <Target Name="Message" BeforeTargets="BeforeBuild">
+        <Message Text="Dalamud.Plugin: root at $(DalamudLibPath)" Importance="high" />
+    </Target>
+</Project>
