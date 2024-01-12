@@ -6,11 +6,7 @@ internal class TableRowComparerUtil : IEqualityComparer<TableRow>
 {
     public bool Equals(TableRow? x, TableRow? y)
     {
-<<<<<<< HEAD
-        if (x.Id == y.Id)
-=======
         if (x!.Id == y!.Id)
->>>>>>> 17e02ca (api8)
         {
             x.Count += y.Count;
         }
