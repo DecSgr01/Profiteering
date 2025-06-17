@@ -8,7 +8,7 @@ internal static class MaterialManager
 {
     internal static List<RecipeItem> GetMaterials(Recipe recipe)
     {
-        List<RecipeItem> materials = recipe.UnkData5.Where(x => x.AmountIngredient > 0).Select(x => new RecipeItem(x.ItemIngredient, Dalamud.DataManager.GetExcelSheet<Item>()!.GetRow((uint)x.ItemIngredient)!.Name.ToString(), x.AmountIngredient)).ToList<RecipeItem>();
+        List<RecipeItem> materials = recipe.UnkData5.Where(x => x.AmountIngredient > 0).Select(x => new RecipeItem(x.ItemIngredient, Dalamud.DataManager.GetExcelSheet<Item>()!.GetRow((uint)x.ItemIngredient)!.Name.ToString(), x.AmountIngredient)).ToList();
 
         foreach (var material in materials)
         {

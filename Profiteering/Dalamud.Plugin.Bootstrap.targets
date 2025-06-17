@@ -7,5 +7,5 @@
     <DalamudLibPath Condition="$(DALAMUD_HOME) != ''">$(DALAMUD_HOME)/</DalamudLibPath>
   </PropertyGroup>
 
-  <Import Project="Dalamud.Plugin.targets"/>
+  <Import Project="$(DalamudLibPath)/targets/Dalamud.Plugin.targets"/>
 </Project>

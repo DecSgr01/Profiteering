@@ -18,7 +18,7 @@ internal class ProfiteeringViewModel
     internal List<TableRow> TableRows { get; set; } = null!;
     internal List<TableRow> RefreshTableRow(List<RecipeItem> materials, int num)
     {
-        List<TableRow> tableRow = new();
+        List<TableRow> tableRow = [];
         foreach (var material in materials)
         {
             if (global::Profiteering.Profiteering.Config.isBasicsMaterials && material.AmountResult != 0 && material.Materials != null)
@@ -34,7 +34,7 @@ internal class ProfiteeringViewModel
     }
     private List<TableRow> GetBaseMaterial(RecipeItem material, int num)
     {
-        List<TableRow> tableRow = new();
+        List<TableRow> tableRow = [];
         int materialCount = material.Count * num % material.AmountResult > 0 ? (material.Count * num / material.AmountResult) + 1 : material.Count * num / material.AmountResult;
 
         if (material.AmountResult != 0 && material.Materials != null)
@@ -78,7 +78,7 @@ internal class ProfiteeringViewModel
     private void RefreshMaterialsPrice()
     {
         string word = Dalamud.ClientState.LocalPlayer!.CurrentWorld.GameData!.DataCenter.Value!.Name.ToString();
-        int[] ids = GetMaterialsId(RecipeItem.Materials).ToArray();
+        int[] ids = [.. GetMaterialsId(RecipeItem.Materials)];
         Dalamud.PluginLog.Debug($"ids:{string.Join(",", ids)}");
         Task.Run(async () =>
         {
@@ -87,9 +87,9 @@ internal class ProfiteeringViewModel
             SetMaterialsPrice(RecipeItem.Materials, marketDataResponse.Items);
         });
     }
-    private List<int> GetMaterialsId(List<RecipeItem> materials)
+    private static List<int> GetMaterialsId(List<RecipeItem> materials)
     {
-        List<int> ids = GetMaterialsId(RecipeItem.Materials);
+        List<int> ids = [];
         foreach (RecipeItem material in materials)
         {
             ids.Add(material.Id);
@@ -100,7 +100,7 @@ internal class ProfiteeringViewModel
         }
         return ids.Distinct().ToList();
     }
-    private void SetMaterialsPrice(List<RecipeItem> materials, Dictionary<int, Response.Item> items)
+    private static void SetMaterialsPrice(List<RecipeItem> materials, Dictionary<int, Response.Item> items)
     {
         foreach (RecipeItem material in materials)
         {
@@ -124,7 +124,7 @@ internal class ProfiteeringViewModel
             }
         }
     }
-    public void SetMaterialsPrice(List<RecipeItem> materials, int id, int price)
+    public static void SetMaterialsPrice(List<RecipeItem> materials, int id, int price)
     {
         foreach (RecipeItem material in materials)
         {

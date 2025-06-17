@@ -101,7 +101,7 @@ internal class ProfiteeringView : Window
                 if (ImGui.InputText("##value", ref v, 9))
                 {
                     if (!int.TryParse(v, out int price)) price = 0;
-                    PVM.SetMaterialsPrice(PVM.RecipeItem.Materials, item.Id, price);
+                    ProfiteeringViewModel.SetMaterialsPrice(PVM.RecipeItem.Materials, item.Id, price);
                 }
                 ImGui.PopID();
                 ImGui.TableSetColumnIndex(4);
@@ -125,10 +125,10 @@ internal class ProfiteeringView : Window
         double netProfitMargin = netProfit / operatingRevenue;
         ImGui.Text($"毛利润:{grossProfit}");
         ImGui.SameLine();
-        ImGui.Text($"毛利率:{grossProfitMargin.ToString("P")}%%");
+        ImGui.Text($"毛利率:{grossProfitMargin:P}%%");
         ImGui.Text($"净利润:{Math.Round(netProfit)}");
         ImGui.SameLine();
-        ImGui.Text($"净利率:{netProfitMargin.ToString("P")}%%");
+        ImGui.Text($"净利率:{netProfitMargin:P}%%");
         ImGui.EndChild();
         ImGui.Separator();
         ImGui.NewLine();

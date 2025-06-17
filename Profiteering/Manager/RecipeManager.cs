@@ -6,7 +6,7 @@ internal static class RecipeManager
 {
     internal static Recipe? GetRecipebyItemId(uint itemId)
     {
-        if (itemId != 0)
+        if (itemId == 0)
         {
             return null;
         }
